@@ -15,8 +15,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 //==========================================
 
-mongoose.connect('mongodb://localhost:27017/userDB',{useNewUrlParser: true, useUnifiedTopology: true}); //?retryWrites=true&w=majority
-//"mongodb+srv://"+process.env.DB_USERNAME+":"+process.env.DB_PASSWORD+"@cluster0.6pld9.mongodb.net/toDoListDB"
+mongoose.connect('mongodb://localhost:27017/'+process.env.DB_NAME,{useNewUrlParser: true, useUnifiedTopology: true}); //?retryWrites=true&w=majority
+//"mongodb+srv://"+process.env.DB_USERNAME+":"+process.env.DB_PASSWORD+process.env.DB_CLUSTER+"/"+process.env.DB_NAME
 const userSchema = new mongoose.Schema({
     email: {
         type:String,
