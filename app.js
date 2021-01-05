@@ -27,6 +27,7 @@ app.use(passport.session());
 
 mongoose.connect('mongodb://localhost:27017/'+process.env.DB_NAME,{useNewUrlParser: true, useUnifiedTopology: true}); //?retryWrites=true&w=majority
 //"mongodb+srv://"+process.env.DB_USERNAME+":"+process.env.DB_PASSWORD+process.env.DB_CLUSTER+"/"+process.env.DB_NAME
+mongoose.set('useCreateIndex', true)
 const userSchema = new mongoose.Schema({
     email: {
         type:String,
@@ -55,12 +56,30 @@ app.get('/login',(req,res)=>{
 app.get('/register',(req,res)=>{
     res.render('register',{})
 });
-app.post('/register',(req,res)=>{
-    
-    
+app.get('/secrets',(req,res)=>{
+    if(req.isAuthenticated()){
+        res.render('secrets');
+    }else{
+        res.redirect('/login');
+    }
 });
+app.post('/register',(req,res)=>{
+    User.register({email:req.body.email},req.body.password,(err,user)=>{
+        if(err){
+            console.log(err);
+            res.redirect('/register');
+        }else{
+            passport.authenticate('local')(req,res,()=>{
+                res.redirect('/secrets');
+            })
+        }    
+            })
+    });
 app.post('/login',(req,res)=>{
-    
+    const user = new User({
+        email: req.body.email,
+        password: req.body.password
+    })
     
     });
 const listener = app.listen(process.env.PORT || 3000, function() {
