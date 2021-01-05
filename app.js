@@ -38,7 +38,8 @@ mongoose.set('useCreateIndex', true)
 const userSchema = new mongoose.Schema({
     email:String,
     password: String,
-    googleId: String
+    googleId: String,
+    secret: Array
 });
 //==========================================
 //          SCHEMA PLUGINS
@@ -100,11 +101,21 @@ app.get('/register',(req,res)=>{
     res.render('register')
 });
 app.get('/secrets',function (req,res){
-    if(req.isAuthenticated()){
-        res.render('secrets');
-    }else{
-        res.redirect('/login');
-    }
+    var allSecrets = [];
+    User.find({secret:{$ne:null}},(err,foundUsers)=>{
+        if(err){
+            console.log(err);
+        }else{
+            foundUsers.forEach((user)=>{
+                
+                allSecrets = allSecrets.concat(user.secret);
+                
+            });
+            console.log(allSecrets);
+            res.render('secrets',{secrets :allSecrets.length,remainingSecrets: allSecrets})
+        }
+        
+    })
 });
 app.get('/logout',(req,res)=>{
     req.logout();
@@ -117,6 +128,27 @@ app.get('/submit',function (req,res){
         res.redirect('/login');
     }
 });
+app.post('/submit',(req,res)=>{
+    const submittedSecret = req.body.secret;
+    User.findById(req.user.id,(err,foundUser)=>{
+        if(err){
+            console.log(err);
+            res.redirect('/register');
+        }else{
+            if(foundUser){
+                foundUser.secret.push(submittedSecret);
+                foundUser.save((err,result)=>{
+                    if(err){
+                        console.log(err);
+                        res.redirect('/register');
+                    }else{
+                        res.redirect('/secrets');
+                    }
+                })
+            }
+        }
+    })
+})
 app.post('/register',(req,res)=>{
     User.register({username: req.body.username},req.body.password,function(err,user){
         if(err){
